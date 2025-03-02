@@ -1,0 +1,6 @@
+feat(api): [SCRUM-x] Login and Signup Logic with middleware
+- Login and Signup logic done
+- Base setup for Docker Container and env done
+- Create a middleware for protected api calls
+
+SCRUM-x #comment Follow the commands given in Readme file and if any issues arise contact me #done
