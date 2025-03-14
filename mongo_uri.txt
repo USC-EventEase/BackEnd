@@ -1,0 +1,1 @@
+mongodb+srv://rajeevdh:Rajeevdh%40012@eventeasedb.agck8.mongodb.net/?retryWrites=true&w=majority&appName=EventEaseDB
