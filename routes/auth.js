@@ -17,7 +17,8 @@ if (!JWT_SECRET) {
 // Signup Route
 router.post("/signup", async (req, res) => {
     try {
-      const { name, email, password } = req.body;
+      const { name, email, password, type } = req.body;
+      console.log("in signup")
   
     //   console.log("📌 Received Request:", req.body); // Debugging
   
@@ -32,7 +33,7 @@ router.post("/signup", async (req, res) => {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
   
-      user = new User({ name, email, password: hashedPassword });
+      user = new User({ name, email, password: hashedPassword, type });
   
       await user.save();
     //   console.log("✅ User Created:", user); // Debugging
@@ -56,9 +57,9 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid email or password" });
 
-    const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ userId: user._id, type: user.type }, JWT_SECRET, { expiresIn: "1h" });
 
-    res.status(200).json({ token, userId: user._id });
+    res.status(200).json({ token, userId: user._id, type: user.type });
   } catch (err) {
     res.status(500).json({ message: "Server Error: "+err });
   }
