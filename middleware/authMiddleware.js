@@ -9,24 +9,29 @@ if (!JWT_SECRET) {
   process.exit(1);
 }
 
-// Middleware to authenticate users
-module.exports = (req, res, next) => {
-  // Extract token from Authorization header
+const authenticate = (req, res, next) => {
   const authHeader = req.header("Authorization");
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ message: "Access Denied: No token provided" });
   }
 
-  // Get the actual token (remove "Bearer ")
   const token = authHeader.split(" ")[1];
 
   try {
-    // Verify the token
     const verified = jwt.verify(token, JWT_SECRET);
-    req.user = verified; // Attach user info to request
-    next(); // Proceed to next middleware
+    req.user = verified; // Contains userId and type from the token
+    next();
   } catch (err) {
     return res.status(401).json({ message: "Invalid Token" });
   }
 };
+
+const authorizeAdmin = (req, res, next) => {
+  if (req.user.type !== "admin") {
+    return res.status(403).json({ message: "Access denied. Admins only." });
+  }
+  next();
+};
+
+module.exports = {authorizeAdmin, authenticate}
