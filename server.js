@@ -25,12 +25,21 @@ app.use(cors());
 const authRoutes = require("./routes/auth");
 app.use("/api/auth", authRoutes);
 
-// MongoDB Connection
-mongoose
-  .connect(MONGO_URI)
-  .then(() => console.log("✅ Connected to MongoDB Cloud"))
-  .catch((err) => console.error("❌ MongoDB Connection Failed", err));
 
-// Start Server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+// MongoDB Connection (Only if not in test mode)
+if (process.env.NODE_ENV !== "test") {
+  mongoose
+    .connect(MONGO_URI)
+    .then(() => console.log("✅ Connected to MongoDB Cloud"))
+    .catch((err) => console.error("❌ MongoDB Connection Failed", err));
+}
+
+// Start Server **Only if not running tests**
+let server;
+if (process.env.NODE_ENV !== "test") {
+  const PORT = process.env.PORT || 5000;
+  server = app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+}
+
+// Export app and server (Important for testing)
+module.exports = { app, server };

@@ -1,14 +1,13 @@
 # BackEnd
 
-Rules to follow while running and commiting the code:
+Rules
 
-- For running the docker container use this command: docker compose up --build
-- Use the commitformat.txt file for committing.
-- Replace the x in commitformat.txt with the ticket number on jira to link your commits to that ticket.
+- Use `docker compose up --build` to build the docker container
+- Use the format given in the commitformat.txt while committing your code.
+- Replace the x in above mentioned file with your JIRA ticket number to associate commits with JIRA issue/tasks
+- Backend port is 6000 for this project
 
 1. Signup + Login logic
-
-All passwords are hashed and stored in the DB, keeping it secure.
 
 - Redirect all the signup api calls to localhost:6000/api/auth/signup with JSON body of name, email and password
   - Returns 201 if user created successfully
