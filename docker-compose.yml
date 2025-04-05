@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  backend:
+    build: .
+    ports:
+      - "6000:6000"
+    environment:
+      - PORT=6000
+      - NODE_ENV=production  # This will be overridden in CI if needed
+    secrets:
+      - mongo_uri
+      - jwt_secret
+
+secrets:
+  mongo_uri:
+    file: ./mongo_uri.txt
+  jwt_secret:
+    file: ./jwt_secret.txt
