@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const { app } = require("../server"); // Import the app
 const User = require("../models/User");
+const fs = require("fs");
 
 // let mongoServer;
 

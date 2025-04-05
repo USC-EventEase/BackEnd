@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - Rajeev
+      - Aditi
 
 jobs:
   test-in-docker:
@@ -19,4 +20,8 @@ jobs:
         run: docker build -t my-app .
 
       - name: Run Tests Inside Docker
-        run: docker run --rm my-app npm test
+        run: docker run --rm \
+          -v $PWD/mongo_uri.txt:/run/secrets/mongo_uri \
+          -v $PWD/jwt_secret.txt:/run/secrets/jwt_secret \
+          -e NODE_ENV=test \
+          my-app npm test
