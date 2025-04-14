@@ -24,8 +24,10 @@ app.use(cors());
 // Routes
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/adminRoutes")
+const userRoutes = require("./routes/userRoutes")
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/user", userRoutes);
 
 
 // MongoDB Connection (Only if not in test mode)
