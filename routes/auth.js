@@ -18,7 +18,6 @@ if (!JWT_SECRET) {
 router.post("/signup", async (req, res) => {
     try {
       const { name, email, password, type } = req.body;
-      console.log("in signup")
   
     //   console.log("📌 Received Request:", req.body); // Debugging
   
