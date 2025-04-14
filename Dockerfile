@@ -12,7 +12,7 @@ RUN npm install
 COPY . .
 
 # Expose the application port
-EXPOSE 6000
+EXPOSE 3001
 
 # Read secrets from Docker secrets directory
 CMD ["sh", "-c", "export MONGO_URI=$(cat /run/secrets/mongo_uri) && export JWT_SECRET=$(cat /run/secrets/jwt_secret) && node server.js"]
