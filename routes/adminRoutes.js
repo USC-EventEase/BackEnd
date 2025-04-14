@@ -1,6 +1,7 @@
 const express = require("express");
 const Admin = require("../models/Admin");
 const { authenticate, authorizeAdmin } = require("../middleware/authMiddleware");
+const axios = require("axios");
 
 const router = express.Router();
 
@@ -44,6 +45,22 @@ router.post("/event", authenticate, authorizeAdmin, async (req, res) => {
     });
 
     await newEvent.save();
+
+    const recommendationPayload = {
+      eventId: newEvent._id,
+      eventData: {
+        event_name,
+        event_description
+      }
+    };
+
+    try {
+      await axios.post("http://localhost:6043/api/add_recommendations", recommendationPayload); 
+    } catch (recommendationError) {
+      console.error("Recommendation service error:", recommendationError.message);
+    }
+
+
     res.status(201).json({ message: "Event created", event: newEvent });
   } catch (err) {
     res.status(500).json({ message: "Server Error: " + err.message });
@@ -127,7 +144,16 @@ router.delete("/event/:id", authenticate, authorizeAdmin, async (req, res) => {
   try {
     const deletedEvent = await Admin.findByIdAndDelete(req.params.id);
     if (!deletedEvent) return res.status(404).json({ message: "Event not found" });
+    
+    const recommendationPayload = {
+      eventId: req.params.id
+    };
 
+    try {
+      await axios.post("http://localhost:6043/api/delete_recommendations", recommendationPayload); 
+    } catch (recommendationError) {
+      console.error("Recommendation service error:", recommendationError.message);
+    }
     res.status(200).json({ message: "Event deleted" });
   } catch (err) {
     res.status(500).json({ message: "Server Error: " + err.message });
