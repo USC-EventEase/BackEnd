@@ -1,17 +1,26 @@
 const mongoose = require("mongoose");
 
+const TicketSchema = new mongoose.Schema({
+  total_tickets: { type: String, required: true },
+  original_price: { type: String, required: true },
+  current_price: { type: String, required: true },
+  available_tickets: { type: String, required: true }
+}, { _id: false });
+
 const AdminSchema = new mongoose.Schema({
   user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   event_name: { type: String, required: true },
-  event_creation_time: { type: Date, required: true },
-  event_end_time: { type: Date, required: true },
+  event_description: { type: String, required: true },
+  event_date: { type: String, required: true }, // Format: MM/DD/YYYY
+  event_time: { type: String, required: true }, // Format: HH:mm
+  event_genre: { type: String, required: true },
+  event_image: { type: String, required: true },
+  tickets: {
+    type: Map,
+    of: TicketSchema,
+    required: true
+  },
   event_location: { type: String, required: true }
 });
-
-AdminSchema.index({ event_name: 1 });
-AdminSchema.index({ user_id: 1 });
-AdminSchema.index({ event_creation_time: 1 });
-AdminSchema.index({ event_end_time: 1 });
-AdminSchema.index({ event_location: 1 });
 
 module.exports = mongoose.model("Admin", AdminSchema);
