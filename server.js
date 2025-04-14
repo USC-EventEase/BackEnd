@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const fs = require("fs");
+require('./jobs/dynamicPrice')(); 
 
 dotenv.config();
 const app = express();
