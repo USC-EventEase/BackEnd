@@ -1,6 +1,7 @@
 # BackEnd
 
 Rules
+For running this code make sure to run this before: docker network create my_shared_net
 
 - Use `docker compose up --build` to build the docker container
 - Use the format given in the commitformat.txt while committing your code.

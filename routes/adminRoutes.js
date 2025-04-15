@@ -55,7 +55,7 @@ router.post("/event", authenticate, authorizeAdmin, async (req, res) => {
     };
 
     try {
-      await axios.post("http://localhost:3002/api/add_recommendations", recommendationPayload); 
+      await axios.post("http://recommendation:3002/api/add_recommendations", recommendationPayload); 
     } catch (recommendationError) {
       console.error("Recommendation service error:", recommendationError.message);
     }
@@ -150,7 +150,7 @@ router.delete("/event/:id", authenticate, authorizeAdmin, async (req, res) => {
     };
 
     try {
-      await axios.post("http://localhost:3002/api/delete_recommendations", recommendationPayload); 
+      await axios.post("http://recommendation:3002/api/delete_recommendations", recommendationPayload); 
     } catch (recommendationError) {
       console.error("Recommendation service error:", recommendationError.message);
     }
