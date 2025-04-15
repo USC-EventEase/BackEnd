@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 
 const TicketSchema = new mongoose.Schema({
-  total_tickets: { type: String, required: true },
-  original_price: { type: String, required: true },
-  current_price: { type: String, required: true },
-  available_tickets: { type: String, required: true }
+  total_tickets: { type: Number, required: true },
+  original_price: { type: Number, required: true },
+  current_price: { type: Number, required: true },
+  available_tickets: { type: Number, required: true }
 }, { _id: false });
 
 const AdminSchema = new mongoose.Schema({
