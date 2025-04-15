@@ -18,6 +18,23 @@ router.get('/events', authenticate, async (req, res) => {
 	}
 });
 
+// GET /api/user/events - Get events with event_id
+router.get('/events/:id', authenticate, async (req, res) => {
+	try {
+	  const eventId = req.params.id;
+	  // Use findById to find the event by its id and exclude the user_id field
+	  const event = await Admin.findById(eventId, { user_id: 0 });
+	  
+	  if (!event) {
+		return res.status(404).json({ message: 'Event not found' });
+	  }
+	  
+	  res.status(200).json(event);
+	} catch (err) {
+	  res.status(500).json({ message: "Server Error: " + err.message });
+	}
+  });
+
 // GET /api/user/events/search?name=<x> - Search by event name
 router.get('/events/search', authenticate, async (req, res) => {
 	try {
