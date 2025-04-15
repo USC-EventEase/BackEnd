@@ -2,6 +2,7 @@ const express = require("express");
 const Admin = require("../models/Admin");
 const User = require("../models/User");
 const { authenticate } = require("../middleware/authMiddleware");
+const MyTicket = require('../models/MyTicket');
 const router = express.Router();
 
 
@@ -57,34 +58,112 @@ router.get('/events/genre', authenticate, async (req, res) => {
   }
 });
 
-// PATCH /api/user/event/<id>/tickets/<tickets> - Update the number of available tickets
-router.patch("/event/:id/tickets/:type", authenticate, async (req, res) => {
-  const { id, type } = req.params;
-  const { available_tickets } = req.body;
+// POST /api/user/events/register - Registers the specified number of tickets for a user and event, and stores the order in MyTicket
+router.post('/event/register', authenticate, async (req, res) => {
+	const { event_id, tickets } = req.body;
+	const user_id = req.user.userId
 
-  if (available_tickets === undefined) {
-    return res.status(400).json({ message: "Missing field in request body" });
-  }
+	try {
+		const event = await Admin.findById(event_id);
+		if (!event) {
+			return res.status(404).json({ message: 'Event not found' });
+		}
+
+		let total_amount = 0;
+		const ticketDetails = {};
+
+		for (const [type, info] of Object.entries(tickets)) {
+			const eventTicket = event.tickets.get(type);
+
+			if (!eventTicket) {
+				return res.status(400).json({ message: `Ticket type not found in event` });
+			}
+
+			const count = info.count;
+			const price = info.price;
+			const available = parseInt(eventTicket.available_tickets);
+
+			if (count > available || count < 0) {
+				return res.status(400).json({ message: `Incorrect number of tickets requested` });
+			}
+
+			eventTicket.available_tickets = `${available - count}`;
+			event.tickets.set(type, eventTicket);
+
+			ticketDetails[type] = {
+				original_count: count,
+				available_count: count,
+				price: count * price
+			};
+
+			total_amount += count * price;
+		}
+
+		const myTicket = new MyTicket({
+			event_id,
+			user_id,
+			total_amount,
+			tickets: ticketDetails
+		});
+
+		await myTicket.save();
+		await event.save();
+
+		res.status(201).json({ message: "Tickets registered successfully!", ticket: myTicket });
+	} catch (err) {
+		res.status(500).json({ message: "Server Error: " + err.message });
+	}
+});
+
+// Call to update available count after QR code is verified
+// PATCH /api/user/ticket/<id>/type/<ticketType> - Updates available count of each ticket type in MyTickets
+router.patch("/ticket/:id/type/:type", authenticate, async (req, res) => {
+	const { id, type } = req.params;
+	const { count } = req.body;
+
+	if (isNaN(count) || count < 0) {
+		return res.status(400).json({ message: "Invalid or missing count in request body" });
+	}
+
+	try {
+		const ticket = await MyTicket.findById(id);
+		if (!ticket) return res.status(404).json({ message: "Ticket not found" });
+
+		const ticketType = ticket.tickets.get(type);
+		if (!ticketType) {
+			return res.status(404).json({ message: `Ticket type not found` });
+		}
+
+		if ( count > ticketType.available_count) {
+			return res.status(400).json({ message: `Error not enough tickets available` });
+		}
+
+		ticketType.available_count = ticketType.available_count - count;
+		ticket.tickets.set(type, ticketType);
+		await ticket.save();
+
+		res.status(200).json({ message: `'${type}' available count updated`, ticket });
+	} catch (err) {
+		res.status(500).json({ message: "Server Error: " + err.message });
+	}
+});
+
+// GET /api/user/tickets - Get all tickets the user
+router.get('/tickets', authenticate, async (req, res) => {
+  const userId = req.user.userId
 
   try {
+    const tickets = await MyTicket.find({ user_id: userId })
+      .populate('event_id', 'event_name event_description event_date event_time event_location');
 
-    const event = await Admin.findById(id);
-    if (!event) return res.status(404).json({ message: "Event not found" });
-
-    const ticket = event.tickets.get(type);
-    if (!ticket) {
-      return res.status(404).json({ message: `Ticket type not found in event` });
+    if (tickets.length === 0) {
+      return res.status(404).json({ message: "No tickets found for this user." });
     }
 
-		if (available_tickets < 0 || available_tickets > ticket.total_tickets) {
-      return res.status(400).json({ message: `Error updating available tickets` });
-    }
-
-    ticket.available_tickets = available_tickets;
-    event.tickets.set(type, ticket);
-    await event.save();
-
-    res.status(200).json({ message: `'${type}' available tickets updated`, event });
+    res.status(200).json({
+      message: `Tickets for user`,
+      tickets
+    });
   } catch (err) {
     res.status(500).json({ message: "Server Error: " + err.message });
   }
