@@ -9,6 +9,7 @@ const TicketDetailSchema = new mongoose.Schema({
 const MyTicketSchema = new mongoose.Schema({
   event_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', required: true },
   user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  dateTimeBooking: { type: Date, default: Date.now },
   total_amount: { type: Number, required: true },
   tickets: {
     type: Map,
