@@ -1,11 +1,12 @@
 # BackEnd
 
 Rules
+For running this code make sure to run this before: docker network create my_shared_net
 
 - Use `docker compose up --build` to build the docker container
 - Use the format given in the commitformat.txt while committing your code.
 - Replace the x in above mentioned file with your JIRA ticket number to associate commits with JIRA issue/tasks
-- Backend port is 6000 for this project
+- Backend port is 3001 for this project
 
 1. Signup + Login logic
 

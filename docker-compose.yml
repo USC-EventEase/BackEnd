@@ -11,9 +11,13 @@ services:
     secrets:
       - mongo_uri
       - jwt_secret
-
+    networks:
+      - my_shared_net  # Attach to the external network
 secrets:
   mongo_uri:
     file: ./mongo_uri.txt
   jwt_secret:
     file: ./jwt_secret.txt
+networks:
+  my_shared_net:
+    external: true
