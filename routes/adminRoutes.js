@@ -1,9 +1,71 @@
 const express = require("express");
 const Admin = require("../models/Admin");
+const MyTicket = require("../models/MyTicket");
 const { authenticate, authorizeAdmin } = require("../middleware/authMiddleware");
 const axios = require("axios");
 
 const router = express.Router();
+
+
+
+router.put("/validate/:bookingId/:userId/:eventId/:type", authenticate, authorizeAdmin, async (req, res) => {
+  const { bookingId, userId, eventId, type } = req.params;
+  if(!bookingId || !userId || !eventId || !type){
+    return res.status(404).json({ error: 'Params not found.' });
+  }
+  try {
+    const booking = await MyTicket.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+    if (booking.user_id.toString() !== userId) {
+      return res
+        .status(403)
+        .json({ error: 'This booking does not belong to the specified user.' });
+    }
+    if (booking.event_id.toString() !== eventId) {
+      return res
+        .status(400)
+        .json({ error: 'This booking is not for the specified event.' });
+    }
+
+    const event = await Admin.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found.' });
+    }
+    if (event.user_id.toString() !== req.user.userId) {
+      return res
+        .status(403)
+        .json({ error: 'You are not authorized to validate tickets for this event.' });
+    }
+    const ticketType = booking.tickets.get(type);
+		if (!ticketType) {
+			return res.status(404).json({ message: `Ticket type not found` });
+		}
+
+    const available = ticketType.available_count;
+      if (available < 1) {
+        return res
+          .status(400)
+          .json({ error: `Not enough ${type} tickets left (requested ${requested}, available ${available}).` });
+      }
+
+      // All checks passed
+      
+      ticketType.available_count = ticketType.available_count - 1;
+      booking.tickets.set(type, ticketType);
+      await booking.save();
+
+      // 9. Finally, send back success
+      return res.status(200).json({ valid: true, remaining: ticketType.available_count});
+      
+    
+  } catch (err) {
+    console.error('Validation error:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
 
 // CREATE Event
 router.post("/event", authenticate, authorizeAdmin, async (req, res) => {
