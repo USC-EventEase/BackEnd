@@ -1,19 +1,26 @@
 const express = require("express");
 const Admin = require("../models/Admin");
 const MyTicket = require("../models/MyTicket");
+const Salt = require("../models/Salt");
 const { authenticate, authorizeAdmin } = require("../middleware/authMiddleware");
 const axios = require("axios");
+const saltUpdates = require('../jobs/saltUpdate')
 
 const router = express.Router();
 
 
 
-router.put("/validate/:bookingId/:userId/:eventId/:type", authenticate, authorizeAdmin, async (req, res) => {
-  const { bookingId, userId, eventId, type } = req.params;
-  if(!bookingId || !userId || !eventId || !type){
+router.put("/validate/:bookingId/:userId/:eventId/:type/:salt", authenticate, authorizeAdmin, async (req, res) => {
+  const { bookingId, userId, eventId, type, salt } = req.params;
+  if(!bookingId || !userId || !eventId || !type || !salt){
     return res.status(404).json({ error: 'Params not found.' });
   }
   try {
+    const saltLatest = await saltUpdates.getLatest();
+    if(saltLatest.value!=salt){
+      return res.status(404).json({ error: 'Salt incorrect' });
+    }
+
     const booking = await MyTicket.findById(bookingId);
     if (!booking) {
       return res.status(404).json({ error: 'Ticket not found' });

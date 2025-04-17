@@ -4,6 +4,8 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const fs = require("fs");
 require('./jobs/dynamicPrice')(); 
+const initSaltJob = require('./jobs/saltUpdate');
+
 
 dotenv.config();
 const app = express();
@@ -44,6 +46,7 @@ if (process.env.NODE_ENV !== "test") {
 // Start Server **Only if not running tests**
 let server;
 if (process.env.NODE_ENV !== "test") {
+  initSaltJob();
   const PORT = process.env.PORT || 5000;
   server = app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 }
