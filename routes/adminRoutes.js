@@ -139,7 +139,11 @@ router.post("/event", authenticate, authorizeAdmin, async (req, res) => {
 // READ All Events
 router.get("/events", authenticate, authorizeAdmin, async (req, res) => {
   try {
-    const events = await Admin.find().populate("user_id", "name email");
+    const userId = req.user.userId;
+    const events = await Admin.find({ user_id: userId }).populate(
+      "user_id",
+      "name email"
+    );
     res.status(200).json(events);
   } catch (err) {
     res.status(500).json({ message: "Server Error: " + err.message });
