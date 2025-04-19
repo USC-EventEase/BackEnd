@@ -30,7 +30,7 @@ router.get('/getanalytics/:userId', authenticate, authorizeAdmin, async (req, re
             const tickets = await MyTicket.find({ event_id: event._id });
             tickets.forEach(ticket => {
                 ticket.tickets.forEach(ticketDetail => {
-                    const date = ticketDetail.ticket_purchase_date.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
+                    const date = ticket.dateTimeBooking.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
                     if (!revenueData[date]) {
                         revenueData[date] = 0;
                     }
