@@ -47,7 +47,7 @@ router.post("/signup", async (req, res) => {
   });
 
 // Validity check Route
-app.get('/verify-token', authenticate, (req, res) => {
+router.get('/verify-token', authenticate, (req, res) => {
   try {
     res.status(200).json({ valid: true, user: req.user });
   } catch {
