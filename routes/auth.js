@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const fs = require("fs");
+const { authenticate, authorizeAdmin } = require("../middleware/authMiddleware");
+
 
 const router = express.Router();
 
@@ -43,8 +45,24 @@ router.post("/signup", async (req, res) => {
       res.status(500).json({ message: "Server Error: " + err.message });
     }
   });
-  
 
+// Validity check Route
+router.get('/verify-token', authenticate, (req, res) => {
+  try {
+    res.status(200).json({ valid: true, user: req.user });
+  } catch {
+    res.status(401).json({ valid: false });
+  }
+});
+
+// Validity check Route - Admin
+router.get('/verify-token-admin', authenticate, authorizeAdmin, (req, res) => {
+  try {
+    res.status(200).json({ valid: true, user: req.user });
+  } catch {
+    res.status(401).json({ valid: false });
+  }
+});
 // Login Route
 router.post("/login", async (req, res) => {
   try {
@@ -56,7 +74,7 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid email or password" });
 
-    const token = jwt.sign({ userId: user._id, type: user.type }, JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ userId: user._id, type: user.type }, JWT_SECRET, { expiresIn: "24h" });
 
     res.status(200).json({ token, userId: user._id, type: user.type });
   } catch (err) {

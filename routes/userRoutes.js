@@ -4,7 +4,7 @@ const User = require("../models/User");
 const { authenticate } = require("../middleware/authMiddleware");
 const MyTicket = require('../models/MyTicket');
 const router = express.Router();
-
+const saltUpdates = require('../jobs/saltUpdate')
 
 // GET /api/user/events - Get all events without user_id
 router.get('/events', authenticate, async (req, res) => {
@@ -13,6 +13,17 @@ router.get('/events', authenticate, async (req, res) => {
 	  const events = await Admin.find({}, { user_id: 0 });
   
 	  res.status(200).json(events);
+	} catch (err) {
+	  res.status(500).json({ message: "Server Error: " + err.message });
+	}
+});
+
+// GET /api/user/salt - Get salt 
+router.get('/salt', authenticate, async (req, res) => {
+	try {
+		const saltLatest = await saltUpdates.getLatest();
+  
+	  	res.status(200).json({"Salt":saltLatest});
 	} catch (err) {
 	  res.status(500).json({ message: "Server Error: " + err.message });
 	}
