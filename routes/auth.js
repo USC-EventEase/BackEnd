@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const fs = require("fs");
+const { authenticate, authorizeAdmin } = require("../middleware/authMiddleware");
+
 
 const router = express.Router();
 
@@ -17,7 +19,7 @@ if (!JWT_SECRET) {
 // Signup Route
 router.post("/signup", async (req, res) => {
     try {
-      const { name, email, password } = req.body;
+      const { name, email, password, type } = req.body;
   
     //   console.log("📌 Received Request:", req.body); // Debugging
   
@@ -32,7 +34,7 @@ router.post("/signup", async (req, res) => {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
   
-      user = new User({ name, email, password: hashedPassword });
+      user = new User({ name, email, password: hashedPassword, type });
   
       await user.save();
     //   console.log("✅ User Created:", user); // Debugging
@@ -43,8 +45,24 @@ router.post("/signup", async (req, res) => {
       res.status(500).json({ message: "Server Error: " + err.message });
     }
   });
-  
 
+// Validity check Route
+router.get('/verify-token', authenticate, (req, res) => {
+  try {
+    res.status(200).json({ valid: true, user: req.user });
+  } catch {
+    res.status(401).json({ valid: false });
+  }
+});
+
+// Validity check Route - Admin
+router.get('/verify-token-admin', authenticate, authorizeAdmin, (req, res) => {
+  try {
+    res.status(200).json({ valid: true, user: req.user });
+  } catch {
+    res.status(401).json({ valid: false });
+  }
+});
 // Login Route
 router.post("/login", async (req, res) => {
   try {
@@ -56,9 +74,9 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid email or password" });
 
-    const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ userId: user._id, type: user.type }, JWT_SECRET, { expiresIn: "24h" });
 
-    res.status(200).json({ token, userId: user._id });
+    res.status(200).json({ token, userId: user._id, type: user.type });
   } catch (err) {
     res.status(500).json({ message: "Server Error: "+err });
   }

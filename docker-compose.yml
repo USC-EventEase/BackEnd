@@ -3,17 +3,25 @@ version: "3.8"
 services:
   backend:
     build: .
+    container_name: backend
     ports:
-      - "6000:6000"
+      - "3001:3001"
     environment:
-      - PORT=6000
+      - PORT=3001
       - NODE_ENV=production  # This will be overridden in CI if needed
     secrets:
       - mongo_uri
       - jwt_secret
-
+      - qr_secret
+    networks:
+      - my_shared_net  # Attach to the external network
 secrets:
   mongo_uri:
     file: ./mongo_uri.txt
   jwt_secret:
     file: ./jwt_secret.txt
+  qr_secret:
+    file: ./qr_secret.txt
+networks:
+  my_shared_net:
+    external: true
