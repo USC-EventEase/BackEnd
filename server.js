@@ -4,6 +4,8 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const fs = require("fs");
 require('./jobs/dynamicPrice')(); 
+const initSaltJob = require('./jobs/saltUpdate');
+
 
 dotenv.config();
 const app = express();
@@ -26,9 +28,11 @@ app.use(cors());
 const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/adminRoutes")
 const userRoutes = require("./routes/userRoutes")
+const analyticsRoutes = require("./routes/analytics");
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 
 // MongoDB Connection (Only if not in test mode)
@@ -42,6 +46,7 @@ if (process.env.NODE_ENV !== "test") {
 // Start Server **Only if not running tests**
 let server;
 if (process.env.NODE_ENV !== "test") {
+  initSaltJob();
   const PORT = process.env.PORT || 5000;
   server = app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 }
